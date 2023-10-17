@@ -11,11 +11,20 @@ public class Piece : MonoBehaviour
     public Vector3Int[] cells{ get; private set;}
     public TetrominoData data { get; private set;}
     public int rotationIndex { get; private set; }
+
+    public float stepDelay = 1f;
+    public float lockDelay = 0.5f;
+        
+    private float stepTime;
+    private float lockTime;
     public void Initialize(Board newBoard, Vector3Int newPosition, TetrominoData newData)
     {
         board = newBoard;
         position = newPosition;
         data = newData;
+        rotationIndex = 0;
+        stepTime = Time.time + stepDelay;
+        lockTime = 0f;
         
         if (cells == null)
         {
@@ -30,6 +39,8 @@ public class Piece : MonoBehaviour
 
     private void Update()
     {
+        lockTime += Time.deltaTime;
+        
         board.Clear(this);
 
         if (Input.GetKeyDown(KeyCode.Z))
@@ -46,11 +57,47 @@ public class Piece : MonoBehaviour
         } else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             Move(Vector2Int.right);
-        } else if (Input.GetKeyDown(KeyCode.DownArrow))
+        } 
+        if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Move(Vector2Int.down);
         }
+        
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            HardDrop();
+        }
+
+        if (Time.time >= stepTime)
+        {
+            Step();
+        }
         board.Set(this);
+    }
+
+    private void Step()
+    {
+        stepTime = Time.time + stepDelay;
+        Move(Vector2Int.down);
+        if (lockTime >= lockDelay)
+        {
+            Lock();
+        }
+    }
+
+    private void HardDrop()
+    {
+        while (Move(Vector2Int.down))
+        {
+            continue;
+        }
+        Lock();
+    }
+
+    private void Lock()
+    {
+        board.Set(this);
+        board.SpawnPiece();
     }
 
     private bool Move(Vector2Int translation)
@@ -64,6 +111,7 @@ public class Piece : MonoBehaviour
         if (valid)
         {
             position = newPosition;
+            lockTime = 0f;
         }
 
         return valid;
