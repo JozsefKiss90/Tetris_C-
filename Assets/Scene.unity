@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 113799268}
   - component: {fileID: 113799267}
+  - component: {fileID: 113799269}
   m_Layer: 0
   m_Name: Ghost
   m_TagString: Untagged
@@ -168,6 +169,21 @@ Transform:
   - {fileID: 910321207}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &113799269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113799266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fbefc07ac8055f46b6710b7bcf4eb0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tile: {fileID: 11400000, guid: 3d47471e8153eb14c88632094c07471c, type: 2}
+  board: {fileID: 1737016196}
+  trackingPiece: {fileID: 1737016195}
 --- !u!1 &391648628
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,7 +424,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.103186175, g: 0.11415815, b: 0.2924528, a: 0}
+  m_BackGroundColor: {r: 0.21226418, g: 0.21370815, b: 0.23584908, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -596,6 +612,7 @@ GameObject:
   - component: {fileID: 1737016193}
   - component: {fileID: 1737016196}
   - component: {fileID: 1737016195}
+  - component: {fileID: 1737016197}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -643,6 +660,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d10f3ed1d354914a9b32984f8ba3793, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stepDelay: 1
+  lockDelay: 0.5
 --- !u!114 &1737016196
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -670,8 +689,21 @@ MonoBehaviour:
     tile: {fileID: 11400000, guid: 903c17f2a5fe23c43965df6ce832b2ca, type: 2}
   - tetromino: 6
     tile: {fileID: 11400000, guid: 8ea59e573abd94f4b8521141d945056e, type: 2}
-  spawnPosition: {x: 0, y: 0, z: 0}
+  spawnPosition: {x: -1, y: 8, z: 0}
   boardSize: {x: 10, y: 20}
+--- !u!114 &1737016197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1737016192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebc524f47c391bf448a77738d833ead9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  position: {x: 7, y: 5, z: 10}
 --- !u!1 &2043614038
 GameObject:
   m_ObjectHideFlags: 0

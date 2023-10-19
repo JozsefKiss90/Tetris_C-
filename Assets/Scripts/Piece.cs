@@ -37,32 +37,68 @@ public class Piece : MonoBehaviour
         }
     }
 
+    private float holdDelay = 0.5f; // delay before the piece starts moving consecutively
+    private float holdTimer = 0f;
+    private bool isHolding = false;
+
     private void Update()
     {
         lockTime += Time.deltaTime;
-        
+    
         board.Clear(this);
 
         if (Input.GetKeyDown(KeyCode.Z))
         {
             Rotate(-1);
-        } else if (Input.GetKeyDown(KeyCode.X))
+        } 
+        else if (Input.GetKeyDown(KeyCode.X))
         {
             Rotate(1);
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKey(KeyCode.LeftArrow))
         {
-            Move(Vector2Int.left);
-        } else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            Move(Vector2Int.right);
+            if (isHolding)
+            {
+                holdTimer += Time.deltaTime;
+                if (holdTimer > holdDelay)
+                {
+                    Move(Vector2Int.left);
+                }
+            }
+            else
+            {
+                Move(Vector2Int.left);
+                isHolding = true;
+            }
         } 
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            if (isHolding)
+            {
+                holdTimer += Time.deltaTime;
+                if (holdTimer > holdDelay)
+                {
+                    Move(Vector2Int.right);
+                }
+            }
+            else
+            {
+                Move(Vector2Int.right);
+                isHolding = true;
+            }
+        } 
+        else
+        {
+            isHolding = false;
+            holdTimer = 0f;
+        }
+
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Move(Vector2Int.down);
         }
-        
+    
         if (Input.GetKeyDown(KeyCode.Space))
         {
             HardDrop();
@@ -74,6 +110,7 @@ public class Piece : MonoBehaviour
         }
         board.Set(this);
     }
+
 
     private void Step()
     {
@@ -97,6 +134,7 @@ public class Piece : MonoBehaviour
     private void Lock()
     {
         board.Set(this);
+        board.ClearLines();
         board.SpawnPiece();
     }
 
@@ -106,7 +144,7 @@ public class Piece : MonoBehaviour
         newPosition.x += translation.x;
         newPosition.y += translation.y;
         
-        bool valid = board.IsValidPositon(this, newPosition);
+        bool valid = board.IsValidPosition(this, newPosition);
 
         if (valid)
         {
@@ -188,9 +226,9 @@ public class Piece : MonoBehaviour
         {
             wallKickIndex--;
         }
-
         return Wrap(wallKickIndex, 0, data.wallKicks.GetLength(0)); 
     }
+    
     private int Wrap(int input, int min, int max)
     {
         if (input < min) {
