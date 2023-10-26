@@ -17,6 +17,8 @@ public class Piece : MonoBehaviour
         
     private float stepTime;
     private float lockTime;
+    
+
     public void Initialize(Board newBoard, Vector3Int newPosition, TetrominoData newData)
     {
         board = newBoard;
@@ -37,12 +39,14 @@ public class Piece : MonoBehaviour
         }
     }
 
-    private float holdDelay = 0.5f; // delay before the piece starts moving consecutively
-    private float holdTimer = 0f;
     private bool isHolding = false;
+    public float consecutiveMoveInterval = 0.1f; // time in seconds between consecutive moves
+    private float nextConsecutiveMoveTime = 0f;  // internal timer for the next consecutive move
 
     private void Update()
     {
+        if (board.gameOver) return;
+        
         lockTime += Time.deltaTime;
     
         board.Clear(this);
@@ -60,38 +64,39 @@ public class Piece : MonoBehaviour
         {
             if (isHolding)
             {
-                holdTimer += Time.deltaTime;
-                if (holdTimer > holdDelay)
+                if (Time.time > nextConsecutiveMoveTime)
                 {
                     Move(Vector2Int.left);
+                    nextConsecutiveMoveTime = Time.time + consecutiveMoveInterval;
                 }
             }
             else
             {
                 Move(Vector2Int.left);
                 isHolding = true;
+                nextConsecutiveMoveTime = Time.time + consecutiveMoveInterval;
             }
         } 
         else if (Input.GetKey(KeyCode.RightArrow))
         {
             if (isHolding)
             {
-                holdTimer += Time.deltaTime;
-                if (holdTimer > holdDelay)
+                if (Time.time > nextConsecutiveMoveTime)
                 {
                     Move(Vector2Int.right);
+                    nextConsecutiveMoveTime = Time.time + consecutiveMoveInterval;
                 }
             }
             else
             {
                 Move(Vector2Int.right);
                 isHolding = true;
+                nextConsecutiveMoveTime = Time.time + consecutiveMoveInterval;
             }
         } 
         else
         {
             isHolding = false;
-            holdTimer = 0f;
         }
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -110,15 +115,17 @@ public class Piece : MonoBehaviour
         }
         board.Set(this);
     }
-
-
+    
     private void Step()
     {
         stepTime = Time.time + stepDelay;
         Move(Vector2Int.down);
         if (lockTime >= lockDelay)
         {
-            Lock();
+            if (!board.gameOver)
+            {
+                Lock();
+            }
         }
     }
 
@@ -133,9 +140,13 @@ public class Piece : MonoBehaviour
 
     private void Lock()
     {
+        if (board.gameOver) return; 
         board.Set(this);
         board.ClearLines();
-        board.SpawnPiece();
+        if (!board.gameOver)
+        {
+            board.SpawnPiece();
+        }
     }
 
     private bool Move(Vector2Int translation)

@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Next : MonoBehaviour
+public class Hold : MonoBehaviour
 {
     public Board board { get; private set;}
     
-    public Vector3Int position  = new Vector3Int(4, 8, 0);
+    public Vector3Int position  = new Vector3Int(-2, 4, 0);
     public Vector3Int[] cells{ get; private set;}
     public TetrominoData data { get; private set;}
     public bool isInitialized { get; private set; } = false;
@@ -28,7 +28,7 @@ public class Next : MonoBehaviour
         }
     }
     
-    public void UpdateData(TetrominoData newData)
+    /*public void UpdateData(TetrominoData newData)
     {
         if (board.gameOver)
         {
@@ -45,6 +45,6 @@ public class Next : MonoBehaviour
         {
             cells[i] = (Vector3Int)data.cells[i];
         }
-    }
+    }*/
 
 }

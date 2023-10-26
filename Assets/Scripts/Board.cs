@@ -12,10 +12,18 @@ public class Board : MonoBehaviour
     public Piece activePiece{ get; private set; }
     List<TetrominoData> tetrominoData = new List<TetrominoData>();
     public Next nextPiece{ get; private set; }
+    public Hold holdPiece{ get; private set; }
+    public Ghost ghostPiece;
     public Vector3Int spawnPosition = new Vector3Int(-1, 8, 0);
     public Vector2Int boardSize = new Vector2Int(10, 20);
+    public int score = 0;
+    public TMPro.TextMeshProUGUI scoreText;
+    public TMPro.TextMeshProUGUI gameOverText;
+    public TMPro.TextMeshProUGUI restartText;
+    public bool gameOver { get; private set; }
+    private float timeSinceGameOver = 0f;
 
-    public RectInt Bounds
+    public RectInt Bounds 
     {
         get
         {
@@ -28,20 +36,74 @@ public class Board : MonoBehaviour
         tilemap = GetComponentInChildren<Tilemap>(); 
         activePiece = GetComponentInChildren<Piece>(); 
         nextPiece = GetComponentInChildren<Next>(); 
-        
+        ghostPiece = GetComponentInChildren<Ghost>(); 
         for (int i = 0; i < tetrominos.Length; i++)
         {
             tetrominos[i].Initialize();
         }
     }
 
+    private void Update()
+    {
+        if (gameOver)
+        {
+            timeSinceGameOver += Time.deltaTime;
+
+            if (timeSinceGameOver > 1f && Input.GetKeyDown(KeyCode.Space))
+            {
+                RestartGame();
+            }
+            return;
+        }
+    }
+
     private void Start()
     {
+        HoldListener();
         SpawnPiece();
+    }
+    
+    private void RestartGame()
+    {
+        gameOver = false;
+        score = 0;
+        scoreText.text = "0";
+
+        tilemap.ClearAllTiles();
+
+        gameOverText.text = "";
+        restartText.text = "";
+
+        SpawnPiece();
+    }
+
+    public void HoldListener()
+    {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            Debug.Log("C pressed");
+            Clear(activePiece);
+            HoldPiece(tetrominoData[0]);
+            int random = Random.Range(0, tetrominos.Length);
+            tetrominoData.Add(tetrominos[random]);
+            activePiece.Initialize(this, spawnPosition, tetrominoData[0]);
+        }
+    }
+
+    public void HoldPiece(TetrominoData tetromino)
+    {
+        tetrominoData.Remove(tetromino);
+        holdPiece.Initialize(this, tetromino);
     }
 
     public void SpawnPiece()
     {
+        if (gameOver)
+        {   
+            tilemap.ClearAllTiles();
+            return;
+        };
+
         if (nextPiece.isInitialized)
         {
             ClearNext(nextPiece);
@@ -50,32 +112,47 @@ public class Board : MonoBehaviour
         while (tetrominoData.Count < 4)
         {
             int random = Random.Range(0, tetrominos.Length);
-            tetrominoData.Add(tetrominos[random]); //should be added to the back
+            tetrominoData.Add(tetrominos[random]);
         }
-     
+
         activePiece.Initialize(this, spawnPosition, tetrominoData[0]);
-        nextPiece.Initialize(this, tetrominoData[1]);
-        //remove tetrominoData[0]
+
         if (IsValidPosition(activePiece, spawnPosition))
         {
-            Set(activePiece);
             tetrominoData.Remove(tetrominoData[0]);
+            nextPiece.Initialize(this, tetrominoData[1]);
             nextPiece.UpdateData(tetrominoData[0]);
-            SetNext(nextPiece);  // Set the new next pie
-        } else
+        
+            if (!gameOver)
+            {
+                Set(activePiece);
+                SetNext(nextPiece);
+            }
+        }
+        else
         {
             GameOver();
+            timeSinceGameOver = 0f;
+            tilemap.ClearAllTiles();
         }
     }
 
     private void GameOver()
     {
+        gameOver = true;
         tilemap.ClearAllTiles();
-        // extend logic 
+        gameOverText.text = "GAME OVER";
+        restartText.text = "press space\nto restart";
+        ClearNext(nextPiece); 
     }
     
     public void Set(Piece piece)
     {
+        if (gameOver)
+        {   
+            tilemap.ClearAllTiles();
+            return;
+        };
         for (int i = 0; i < piece.cells.Length; i++)
         {
             Vector3Int tilePosition = piece.cells[i] + piece.position;
@@ -84,12 +161,23 @@ public class Board : MonoBehaviour
     }
     
     public void SetNext(Next piece)
-    {
+    {   
+        if (gameOver)
+        {   
+            tilemap.ClearAllTiles();
+            return;
+        };
         for (int i = 0; i < piece.cells.Length; i++)
         {
             Vector3Int tilePosition = piece.cells[i] + piece.position;
             tilemap.SetTile(tilePosition, piece.data.tile);
         }
+    }
+    
+    public void AddScore(int amount)
+    {
+        score += amount;
+        scoreText.text ="" + score;
     }
     
     public void Clear(Piece piece)
@@ -109,7 +197,6 @@ public class Board : MonoBehaviour
             tilemap.SetTile(tilePosition, null);
         }
     }
-
 
     public bool IsValidPosition(Piece piece, Vector3Int position)
     {
@@ -133,6 +220,7 @@ public class Board : MonoBehaviour
 
     public void ClearLines()
     {
+        int linescleared = 0;
         RectInt bounds = Bounds;
         int row = bounds.yMin;
 
@@ -140,13 +228,23 @@ public class Board : MonoBehaviour
         {
             if (isLineFull(row))
             {
-                LineClear(row); 
+                LineClear(row);
+                linescleared++;
             }
             else
             {
                 row++; 
             }
         }
+
+        switch (linescleared)
+        {
+            case 1: AddScore(100); break;
+            case 2: AddScore(200); break;
+            case 3: AddScore(500); break;
+            case 4: AddScore(1000); break;
+        }
+        
     }
 
     private bool isLineFull(int row)

@@ -23,13 +23,17 @@ public class Ghost : MonoBehaviour
 
     private void LateUpdate()
     {
-        Clear();
+        Clear(); // First, clear the ghost piece
+    
+        if(board.gameOver) return; // Then, check if the game is over and halt further logic
+    
         Copy();
         Drop();
         Set();
     }
 
-    private void Clear()
+
+    public void Clear()
     {
         for (int i = 0; i < cells.Length; i++)
         {
@@ -48,6 +52,7 @@ public class Ghost : MonoBehaviour
 
     private void Drop()
     {
+        if(board.gameOver) return;
         Vector3Int position = trackingPiece.position;
         int current = position.y;
         int bottom = -board.boardSize.y / 2 -1;
@@ -72,6 +77,7 @@ public class Ghost : MonoBehaviour
 
     private void Set()
     {
+        if(board.gameOver) return;
         for (int i = 0; i < cells.Length; i++)
         {
             Vector3Int tilePosition = cells[i] + position;
