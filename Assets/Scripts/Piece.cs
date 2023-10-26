@@ -9,7 +9,7 @@ public class Piece : MonoBehaviour
     public Board board { get; private set;}
     public Vector3Int position { get; private set;}
     public Vector3Int[] cells{ get; private set;}
-    public TetrominoData data { get; private set;}
+    public TetrominoData data { get; set;}
     public int rotationIndex { get; private set; }
 
     public float stepDelay = 1f;
@@ -143,6 +143,7 @@ public class Piece : MonoBehaviour
         if (board.gameOver) return; 
         board.Set(this);
         board.ClearLines();
+        board.retrieveEnabled = true;
         if (!board.gameOver)
         {
             board.SpawnPiece();

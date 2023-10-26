@@ -13,6 +13,8 @@ public class Board : MonoBehaviour
     List<TetrominoData> tetrominoData = new List<TetrominoData>();
     public Next nextPiece{ get; private set; }
     public Hold holdPiece{ get; private set; }
+    public bool isHeld = false;
+    public bool retrieveEnabled = true;
     public Ghost ghostPiece;
     public Vector3Int spawnPosition = new Vector3Int(-1, 8, 0);
     public Vector2Int boardSize = new Vector2Int(10, 20);
@@ -20,6 +22,7 @@ public class Board : MonoBehaviour
     public TMPro.TextMeshProUGUI scoreText;
     public TMPro.TextMeshProUGUI gameOverText;
     public TMPro.TextMeshProUGUI restartText;
+    public TMPro.TextMeshProUGUI holdText;
     public bool gameOver { get; private set; }
     private float timeSinceGameOver = 0f;
 
@@ -37,6 +40,7 @@ public class Board : MonoBehaviour
         activePiece = GetComponentInChildren<Piece>(); 
         nextPiece = GetComponentInChildren<Next>(); 
         ghostPiece = GetComponentInChildren<Ghost>(); 
+        holdPiece = null;
         for (int i = 0; i < tetrominos.Length; i++)
         {
             tetrominos[i].Initialize();
@@ -45,6 +49,7 @@ public class Board : MonoBehaviour
 
     private void Update()
     {
+        HoldListener();
         if (gameOver)
         {
             timeSinceGameOver += Time.deltaTime;
@@ -59,7 +64,6 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
-        HoldListener();
         SpawnPiece();
     }
     
@@ -79,21 +83,45 @@ public class Board : MonoBehaviour
 
     public void HoldListener()
     {
-        if (Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeyCode.C) && isHeld && retrieveEnabled)
         {
-            Debug.Log("C pressed");
-            Clear(activePiece);
-            HoldPiece(tetrominoData[0]);
-            int random = Random.Range(0, tetrominos.Length);
-            tetrominoData.Add(tetrominos[random]);
-            activePiece.Initialize(this, spawnPosition, tetrominoData[0]);
+            RetrieveHoldPiece();
+            retrieveEnabled = false;
+        }
+        else if (Input.GetKeyDown(KeyCode.C) && isHeld == false)
+        {
+            if (holdPiece is not null)
+            {
+                ClearHold(holdPiece);
+            }
+            HoldPiece(activePiece.data);
+            isHeld = true;
         }
     }
 
     public void HoldPiece(TetrominoData tetromino)
     {
         tetrominoData.Remove(tetromino);
+        if (holdPiece is null)
+        {
+            holdPiece = GetComponentInChildren<Hold>();
+        }
         holdPiece.Initialize(this, tetromino);
+        Clear(activePiece);
+        ClearNext(nextPiece);
+        SpawnPiece();
+        SetHold(holdPiece);
+    }
+
+    public void RetrieveHoldPiece()
+    {
+        TetrominoData tempData = activePiece.data;
+        Clear(activePiece);
+        activePiece.Initialize(this, spawnPosition, holdPiece.data);
+        ClearHold(holdPiece);
+        holdPiece.Initialize(this, tempData);
+        SetHold(holdPiece);
+        // SpawnPiece
     }
 
     public void SpawnPiece()
@@ -103,7 +131,6 @@ public class Board : MonoBehaviour
             tilemap.ClearAllTiles();
             return;
         };
-
         if (nextPiece.isInitialized)
         {
             ClearNext(nextPiece);
@@ -174,6 +201,20 @@ public class Board : MonoBehaviour
         }
     }
     
+    public void SetHold(Hold piece)
+    {   
+        if (gameOver)
+        {   
+            tilemap.ClearAllTiles();
+            return;
+        };
+        for (int i = 0; i < piece.cells.Length; i++)
+        {
+            Vector3Int tilePosition = piece.cells[i] + piece.position;
+            tilemap.SetTile(tilePosition, piece.data.tile);
+        }
+    }
+    
     public void AddScore(int amount)
     {
         score += amount;
@@ -190,6 +231,15 @@ public class Board : MonoBehaviour
     }
     
     public void ClearNext(Next piece)
+    {
+        for (int i = 0; i < piece.cells.Length; i++)
+        {
+            Vector3Int tilePosition = piece.cells[i] + piece.position;
+            tilemap.SetTile(tilePosition, null);
+        }
+    }
+    
+    public void ClearHold(Hold piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
         {

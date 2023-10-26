@@ -8,7 +8,7 @@ public class Hold : MonoBehaviour
     
     public Vector3Int position  = new Vector3Int(-2, 4, 0);
     public Vector3Int[] cells{ get; private set;}
-    public TetrominoData data { get; private set;}
+    public TetrominoData data { get; set;}
     public bool isInitialized { get; private set; } = false;
 
     public void Initialize(Board newBoard, TetrominoData newData)
