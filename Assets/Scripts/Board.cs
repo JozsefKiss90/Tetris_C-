@@ -15,14 +15,13 @@ public class Board : MonoBehaviour
     public Hold holdPiece{ get; private set; }
     public bool isHeld = false;
     public bool retrieveEnabled = true;
-    public Ghost ghostPiece;
+
     public Vector3Int spawnPosition = new Vector3Int(-1, 8, 0);
     public Vector2Int boardSize = new Vector2Int(10, 20);
     public int score = 0;
     public TMPro.TextMeshProUGUI scoreText;
     public TMPro.TextMeshProUGUI gameOverText;
     public TMPro.TextMeshProUGUI restartText;
-    public TMPro.TextMeshProUGUI holdText;
     public bool gameOver { get; private set; }
     private float timeSinceGameOver = 0f;
 
@@ -39,7 +38,6 @@ public class Board : MonoBehaviour
         tilemap = GetComponentInChildren<Tilemap>(); 
         activePiece = GetComponentInChildren<Piece>(); 
         nextPiece = GetComponentInChildren<Next>(); 
-        ghostPiece = GetComponentInChildren<Ghost>(); 
         holdPiece = null;
         for (int i = 0; i < tetrominos.Length; i++)
         {
